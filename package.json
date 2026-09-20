@@ -7,6 +7,7 @@
     "dev": "concurrently \"pnpm api\" \"pnpm web\"",
     "web": "vite",
     "api": "node server.js",
+    "start": "node server.js",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },

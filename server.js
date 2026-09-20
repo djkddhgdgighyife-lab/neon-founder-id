@@ -15,6 +15,7 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 12 
 const outputDir = path.join(__dirname, "public", "results");
 const templateDir = path.join(__dirname, "public", "templates");
 const kieInputDir = path.join(__dirname, "private", "kie-inputs");
+const distDir = path.join(__dirname, "dist");
 
 function loadLocalEnv() {
   const envPath = path.join(__dirname, ".env");
@@ -61,6 +62,7 @@ app.use(express.json());
 app.use("/results", express.static(outputDir));
 app.use("/templates", express.static(templateDir));
 app.use("/kie-inputs", express.static(kieInputDir, { index: false, fallthrough: false }));
+if (existsSync(distDir)) app.use(express.static(distDir));
 
 async function uploadKieInput(buffer, extension) {
   if (!kieApiKey) throw new Error("KIE_API_KEY is not configured");
@@ -187,4 +189,14 @@ app.post("/api/process-photo", upload.single("photo"), async (req, res) => {
     }
   }
 });
+
+if (existsSync(distDir)) {
+  app.get("/{*splat}", (req, res, next) => {
+    if (req.path.startsWith("/api/") || req.path.startsWith("/results/") || req.path.startsWith("/templates/")) {
+      return next();
+    }
+    return res.sendFile(path.join(distDir, "index.html"));
+  });
+}
+
 app.listen(port, () => console.log(`Photo processor listening on http://localhost:${port}`));
